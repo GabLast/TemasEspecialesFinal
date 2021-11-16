@@ -13,5 +13,46 @@ public class Product {
     private boolean available;
     private int stockAvailable;
 
+    public Product() {
+    }
 
+    public long getIdProduct() {
+        return idProduct;
+    }
+
+    public void setIdProduct(long idProduct) {
+        this.idProduct = idProduct;
+    }
+
+    public long getIdCategory() {
+        return idCategory;
+    }
+
+    public void setIdCategory(long idCategory) {
+        this.idCategory = idCategory;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public boolean isAvailable() {
+        return available;
+    }
+
+    public void setAvailable(boolean available) {
+        this.available = available;
+    }
+
+    public int getStockAvailable() {
+        return stockAvailable;
+    }
+
+    public void setStockAvailable(int stockAvailable) {
+        this.stockAvailable = stockAvailable;
+    }
 }

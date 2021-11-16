@@ -3,6 +3,7 @@ package edu.pucmm.ecommerceapp.database.DAOs;
 import androidx.lifecycle.LiveData;
 import androidx.room.*;
 import edu.pucmm.ecommerceapp.models.Product;
+import edu.pucmm.ecommerceapp.models.User;
 
 import java.util.List;
 
@@ -11,6 +12,12 @@ public interface ProductDao {
 
     @Query("SELECT * FROM product ORDER BY idProduct")
     LiveData<List<Product>> findAll();
+
+    @Query("SELECT * FROM product")
+    List<Product> getAll();
+
+    @Query("SELECT * FROM product where idCategory = :idcat")
+    List<Product> getAllByCategory(long idcat);
 
     @Query("SELECT * FROM product where idCategory = :idCat ORDER BY idProduct")
     LiveData<List<Product>> findAllByCategory(int idCat);
