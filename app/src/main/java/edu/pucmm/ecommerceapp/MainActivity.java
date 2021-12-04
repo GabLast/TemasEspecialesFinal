@@ -1,17 +1,10 @@
 package edu.pucmm.ecommerceapp;
 
 
-import android.app.FragmentTransaction;
-import android.content.Intent;
-import android.widget.EditText;
-import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
-import androidx.fragment.app.Fragment;
-import com.google.android.material.snackbar.Snackbar;
 import edu.pucmm.ecommerceapp.databinding.ActivityMainBinding;
-import edu.pucmm.ecommerceapp.fragments.users.LogInFragment;
-import edu.pucmm.ecommerceapp.fragments.users.RegisterUserFragment;
+import edu.pucmm.ecommerceapp.fragments.user.LogInFragment;
 
 public class MainActivity extends AppCompatActivity {
 

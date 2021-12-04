@@ -13,7 +13,15 @@
     <color name="light_blue_A400">#FF00B0FF</color>
     <color name="black_overlay">#66000000</color>
 
-    <color name="colorPrimary">#019A57</color>
-    <color name="colorSecondary">#039E50</color>
-    <color name="colorTertiary">#10E67A</color>
+    <color name="colorPrimary">#3377fb</color>
+    <color name="colorSecondary">#0055FA</color>
+    <color name="colorTertiary">#6699fc</color>
+    <color name="colorPrimaryDark">#003396</color>
+    <color name="colorOnPrimary">#ffffff</color>
+    <color name="colorWhiteDark">#cfd8dc</color>
+
+    <color name="startColor">#00194b</color>
+    <color name="centerColor">#334d7e</color>
+    <color name="endColor">#6699fc</color>
+
 </resources>

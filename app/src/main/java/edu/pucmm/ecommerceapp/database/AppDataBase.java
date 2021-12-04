@@ -6,12 +6,10 @@ import androidx.room.Room;
 import androidx.room.RoomDatabase;
 import edu.pucmm.ecommerceapp.database.DAOs.CategoryDao;
 import edu.pucmm.ecommerceapp.database.DAOs.ProductDao;
-import edu.pucmm.ecommerceapp.database.DAOs.UserDao;
 import edu.pucmm.ecommerceapp.models.Category;
 import edu.pucmm.ecommerceapp.models.Product;
-import edu.pucmm.ecommerceapp.models.User;
 
-@Database(entities = {User.class, Product.class, Category.class}, version = 1)
+@Database(entities = {Product.class, Category.class}, version = 1)
 public abstract class AppDataBase extends RoomDatabase {
     private static final String DATABASE_NAME = "eCommerceApp";
     private static final Object LOCK = new Object();
@@ -26,7 +24,6 @@ public abstract class AppDataBase extends RoomDatabase {
         return sIntance;
     }
 
-    public abstract UserDao userDao();
     public abstract ProductDao productDao();
     public abstract CategoryDao categoryDao();
 
