@@ -3,7 +3,6 @@ package edu.pucmm.ecommerceapp.database.DAOs;
 import androidx.lifecycle.LiveData;
 import androidx.room.*;
 import edu.pucmm.ecommerceapp.models.Product;
-import edu.pucmm.ecommerceapp.models.User;
 
 import java.util.List;
 
@@ -25,8 +24,9 @@ public interface ProductDao {
     @Query("SELECT * FROM product WHERE idProduct = :id")
     Product find(int id);
 
-    @Insert
-    void insert(Product product);
+    @Transaction
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    long insert(Product product);
 
     @Update
     void update(Product product);

@@ -1,8 +1,9 @@
 package edu.pucmm.ecommerceapp.models;
 
+
 import java.util.Objects;
 
-public class User {
+public class FixUser {
 
     public enum ROL {SELLER, CUSTOMER}
 
@@ -16,7 +17,7 @@ public class User {
     private String birthday;
     private String photo;
 
-    public User() {
+    public FixUser() {
     }
 
     public int getUid() {
@@ -31,69 +32,90 @@ public class User {
         return firstName;
     }
 
-    public void setFirstName(String firstName) {
+    public FixUser setFirstName(String firstName) {
         this.firstName = firstName;
+        return this;
     }
 
     public String getLastName() {
         return lastName;
     }
 
-    public void setLastName(String lastName) {
+    public FixUser setLastName(String lastName) {
         this.lastName = lastName;
+        return this;
     }
 
     public String getEmail() {
         return email;
     }
 
-    public void setEmail(String email) {
+    public FixUser setEmail(String email) {
         this.email = email;
+        return this;
     }
 
     public String getPassword() {
         return password;
     }
 
-    public void setPassword(String password) {
+    public FixUser setPassword(String password) {
         this.password = password;
+        return this;
     }
 
     public ROL getRol() {
         return rol;
     }
 
-    public void setRol(ROL rol) {
+    public FixUser setRol(ROL rol) {
         this.rol = rol;
+        return this;
     }
 
     public String getContact() {
         return contact;
     }
 
-    public void setContact(String contact) {
+    public FixUser setContact(String contact) {
         this.contact = contact;
+        return this;
     }
 
     public String getBirthday() {
         return birthday;
     }
 
-    public void setBirthday(String birthday) {
+    public FixUser setBirthday(String birthday) {
         this.birthday = birthday;
+        return this;
     }
 
     public String getPhoto() {
         return photo;
     }
 
-    public void setPhoto(String photo) {
+    public FixUser setPhoto(String photo) {
         this.photo = photo;
+        return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof FixUser)) return false;
+        FixUser fixUser = (FixUser) o;
+        return getUid() == fixUser.getUid();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getUid());
     }
 
     @Override
     public String toString() {
-        return "User{" +
+        return "Userr{" +
                 "uid=" + uid +
                 ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
@@ -105,5 +127,4 @@ public class User {
                 ", photo='" + photo + '\'' +
                 '}';
     }
-
 }

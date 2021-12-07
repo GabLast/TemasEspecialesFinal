@@ -9,6 +9,7 @@ public class Category {
     private long idCategory;
     private String name;
     private boolean available;
+    private String photo;
 
     public Category() {
     }
@@ -35,5 +36,13 @@ public class Category {
 
     public void setAvailable(boolean available) {
         this.available = available;
+    }
+
+    public String getPhoto() {
+        return photo;
+    }
+
+    public void setPhoto(String photo) {
+        this.photo = photo;
     }
 }

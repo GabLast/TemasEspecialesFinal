@@ -11,12 +11,83 @@
             android:label="@string/menu_home"
             tools:layout="@layout/fragment_home"/>
 
+
+
+
+    <fragment
+            android:id="@+id/nav_category"
+            android:name="edu.pucmm.ecommerceapp.fragments.category.CategoryManagerFragment"
+            android:label="@string/menu_category"
+            tools:layout="@layout/fragment_category_manager">
+
+        <action
+                android:id="@+id/add_cat_to_create_cat"
+                app:destination="@id/createCategory"/>
+
+        <action
+                android:id="@+id/nav_cat_to_nav_product"
+                app:destination="@id/nav_product"/>
+    </fragment>
+
+    <fragment
+            android:id="@+id/createCategory"
+            android:name="edu.pucmm.ecommerceapp.fragments.category.CreateCategoryFragment"
+            android:label="@string/menu_category"
+            tools:layout="@layout/fragment_create_category">
+    </fragment>
+
+
+
+
+
     <fragment
             android:id="@+id/nav_product"
-            android:name="edu.pucmm.ecommerceapp.fragments.product.ProductManager"
+            android:name="edu.pucmm.ecommerceapp.fragments.product.ProductManagerFragment"
             android:label="@string/menu_product"
+            tools:layout="@layout/fragment_product_manager">
+
+
+        <action
+                android:id="@+id/nav_product_to_create_product"
+                app:destination="@id/createProduct"/>
+
+        <action
+                android:id="@+id/nav_product_to_add_to_cart"
+                app:destination="@id/addToCart"/>
+    </fragment>
+
+    <fragment
+            android:id="@+id/createProduct"
+            android:name="edu.pucmm.ecommerceapp.fragments.product.CreateProductFragment"
+            android:label="@string/menu_product"
+            tools:layout="@layout/fragment_create_product">
+    </fragment>
+
+    <fragment
+            android:id="@+id/addToCart"
+            android:name="edu.pucmm.ecommerceapp.fragments.HomeFragment"
+            android:label="@string/soon"
+            tools:layout="@layout/fragment_home">
+    </fragment>
+
+
+
+
+    <fragment
+            android:id="@+id/cart_badge"
+            android:name="edu.pucmm.ecommerceapp.fragments.product.ProductManagerFragment"
+            android:label="@string/menu_category"
             tools:layout="@layout/fragment_home">
 
+        <action
+                android:id="@+id/cart_to_buy"
+                app:destination="@id/checkout"/>
+    </fragment>
 
+    <fragment
+            android:id="@+id/checkout"
+            android:name="edu.pucmm.ecommerceapp.fragments.HomeFragment"
+            android:label="@string/soon"
+            tools:layout="@layout/fragment_home">
     </fragment>
 </navigation>

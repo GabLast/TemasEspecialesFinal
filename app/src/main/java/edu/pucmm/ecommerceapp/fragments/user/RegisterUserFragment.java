@@ -5,12 +5,14 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.widget.*;
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -63,7 +65,7 @@ public class RegisterUserFragment extends Fragment {
 //        rols.add(User.ROL.SELLER.toString());
 
         //Creating the ArrayAdapter instance
-        ArrayAdapter arrayAdapter = new ArrayAdapter(getContext(), android.R.layout.simple_spinner_item, rols);
+        ArrayAdapter arrayAdapter = new ArrayAdapter(getContext(), R.layout.pretty_spinner_item, rols);
         arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         //Setting the ArrayAdapter data on the Spinner
         binding.rolSPINNER.setAdapter(arrayAdapter);
@@ -100,8 +102,12 @@ public class RegisterUserFragment extends Fragment {
             return;
         }
 
-        if (Functions.isEmailValid(binding.emailTXT, email)) {
+        if (!Functions.isEmailValid(binding.emailTXT, email)) {
             FancyToast.makeText(getContext(), "Please enter a valid mail", FancyToast.LENGTH_LONG, FancyToast.ERROR, false).show();
+            return;
+        }
+        if(binding.rolSPINNER.getText().toString().isEmpty()){
+            FancyToast.makeText(getContext(), "Please select a rol", FancyToast.LENGTH_LONG, FancyToast.ERROR, false).show();
             return;
         }
 
@@ -111,6 +117,7 @@ public class RegisterUserFragment extends Fragment {
         user.setEmail(binding.emailTXT.getText().toString().trim());
         user.setRol(User.ROL.valueOf(binding.rolSPINNER.getText().toString()));
         user.setContact(binding.contactTXT.getText().toString());
+        user.setPassword(password);
 
         int day = binding.birthdayDATE.getDayOfMonth();
         int month = binding.birthdayDATE.getMonth();
@@ -129,91 +136,71 @@ public class RegisterUserFragment extends Fragment {
 
         Call<User> userCreateCall = retrofit.create(UserApiService.class).create(user);
 
-//        userCreateCall.enqueue(new Callback<User>() {
-//            @Override
-//            public void onResponse(Call<User> call, Response<User> response) {
-//                switch (response.code()) {
-//                    case 201:
-//                        FancyToast.makeText(getContext(), "User has been registered", FancyToast.LENGTH_LONG, FancyToast.SUCCESS, false).show();
-//                        break;
-//                    case 204:
-//                        FancyToast.makeText(getContext(), "User has been updated", FancyToast.LENGTH_LONG, FancyToast.SUCCESS, false).show();
-//                        break;
-//                    default:
-//                        try {
-//                            FancyToast.makeText(getContext(), response.errorBody().string(), FancyToast.LENGTH_LONG, FancyToast.ERROR, false).show();
-//                        } catch (IOException e) {
-//                            e.printStackTrace();
-//                        }
-//                }
-//
-//                getActivity().getSupportFragmentManager()
-//                        .beginTransaction()
-//                        .setReorderingAllowed(true)
-//                        .replace(R.id.parentFragmentMain, new LogInFragment())
-//                        .addToBackStack(null)
-//                        .commit();
-//            }
-//
-//            @Override
-//            public void onFailure(Call<User> call, Throwable t) {
-//                FancyToast.makeText(getContext(), t.getMessage(), FancyToast.LENGTH_LONG, FancyToast.ERROR, false).show();
-//            }
         call(userCreateCall, error -> {
             if (error) {
                 progressDialog.dismiss();
                 return;
             }
 
-            Firebase.getConstantInstance().upload(uri, String.format("profile/%s.jpg", user.getFirstName()+user.getContact()+user.getBirthday()),
-                    new NetResponse<String>() {
-                        @Override
-                        public void onResponse(String response) {
-                            FancyToast.makeText(getContext(), "Image uploaded successfully", FancyToast.LENGTH_LONG, FancyToast.SUCCESS, false).show();
+            if(uri != null){
+                Firebase.getConstantInstance().upload(uri, String.format("profile/%s.jpg", user.getFirstName()+ user.getContact()+ user.getBirthday()),
+                        new NetResponse<String>() {
+                            @Override
+                            public void onResponse(String response) {
+                                FancyToast.makeText(getContext(), "Image uploaded successfully", FancyToast.LENGTH_LONG, FancyToast.SUCCESS, false).show();
 
-                            user.setPhoto(response);
-                            final Call<User> userUpdateCall = retrofit.create(UserApiService.class).update(user);
+                                user.setPhoto(response);
+                                final Call<User> userUpdateCall = retrofit.create(UserApiService.class).update(user);
 
-                            call(userUpdateCall, res1 -> progressDialog.dismiss());
-                            getActivity().getSupportFragmentManager()
-                                    .beginTransaction()
-                                    .setReorderingAllowed(true)
-                                    .replace(R.id.parentFragmentMain, new LogInFragment())
-                                    .addToBackStack(null)
-                                    .commit();
-                        }
+                                call(userUpdateCall, res1 -> progressDialog.dismiss());
+                            }
 
-                        @Override
-                        public void onFailure(Throwable t) {
-                            progressDialog.dismiss();
-                            FancyToast.makeText(getContext(), t.getMessage(), FancyToast.LENGTH_LONG, FancyToast.ERROR, false).show();
-                        }
-                    });
+                            @Override
+                            public void onFailure(Throwable t) {
+                                progressDialog.dismiss();
+                                System.err.println("error on onFailure" + t.getMessage());
+                                FancyToast.makeText(getContext(), t.getMessage(), FancyToast.LENGTH_LONG, FancyToast.ERROR, false).show();
+                            }
+                        });
+            }else {
+                progressDialog.dismiss();
+            }
+
         });
     }
 
     private void call(Call<User> call, Consumer<Boolean> error) {
         call.enqueue(new Callback<User>() {
+            @RequiresApi(api = Build.VERSION_CODES.N)
             @Override
             public void onResponse(Call<User> call, Response<User> response) {
                 switch (response.code()) {
                     case 201:
                         FancyToast.makeText(getContext(), "User has been registered", FancyToast.LENGTH_LONG, FancyToast.SUCCESS, false).show();
+                        goToLogin();
+                        error.accept(false);
                         break;
                     case 204:
                         FancyToast.makeText(getContext(), "User has been updated", FancyToast.LENGTH_LONG, FancyToast.SUCCESS, false).show();
+                        error.accept(false);
                         break;
                     default:
                         try {
-                            FancyToast.makeText(getContext(), response.errorBody().string(), FancyToast.LENGTH_LONG, FancyToast.ERROR, false).show();
+                            System.err.println("ERROR on onResponse" + response.errorBody().string());
+//                            ^ this doesn't appear on the toast for some reason when the mail is registered
+                            FancyToast.makeText(getActivity(), "Mail is already registered", FancyToast.LENGTH_LONG, FancyToast.ERROR, false).show();
+                            error.accept(true);
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
                 }
             }
 
+            @RequiresApi(api = Build.VERSION_CODES.N)
             @Override
             public void onFailure(Call<User> call, Throwable t) {
+                error.accept(true);
+                System.err.println("error on onFailure 2 " +t.getMessage());
                 FancyToast.makeText(getContext(), t.getMessage(), FancyToast.LENGTH_LONG, FancyToast.ERROR, false).show();
             }
         });
@@ -239,8 +226,8 @@ public class RegisterUserFragment extends Fragment {
             });
 
     private void autoFill() {
-        binding.firstnameTXT.setText("gabseller");
-        binding.lastnameTXT.setText("gablastname");
+        binding.firstnameTXT.setText("gab");
+        binding.lastnameTXT.setText("lastname");
         binding.emailTXT.setText("gab1@mail.com");
         binding.passwordTXT.setText("12345678");
         binding.confirmPassTXT.setText("12345678");
@@ -248,6 +235,15 @@ public class RegisterUserFragment extends Fragment {
         binding.rolSPINNER.setSelection(0);
         binding.birthdayDATE.updateDate(1999, 11, 17);
 
+    }
+
+    public void goToLogin(){
+        getActivity().getSupportFragmentManager()
+                .beginTransaction()
+                .setReorderingAllowed(true)
+                .replace(R.id.parentFragmentMain, new LogInFragment())
+                .addToBackStack(null)
+                .commit();
     }
 
 }

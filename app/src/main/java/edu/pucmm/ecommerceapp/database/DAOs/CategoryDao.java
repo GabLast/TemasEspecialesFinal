@@ -3,7 +3,6 @@ package edu.pucmm.ecommerceapp.database.DAOs;
 import androidx.lifecycle.LiveData;
 import androidx.room.*;
 import edu.pucmm.ecommerceapp.models.Category;
-import edu.pucmm.ecommerceapp.models.Product;
 
 import java.util.List;
 
@@ -20,7 +19,7 @@ public interface CategoryDao {
     Category find(int id);
 
     @Insert
-    void insert(Category a);
+    long insert(Category a);
 
     @Update
     void update(Category a);

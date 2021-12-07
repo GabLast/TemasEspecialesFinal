@@ -6,7 +6,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 import androidx.fragment.app.Fragment;
 import com.google.gson.GsonBuilder;
@@ -21,6 +20,7 @@ import edu.pucmm.ecommerceapp.helpers.GlobalVariables;
 import edu.pucmm.ecommerceapp.helpers.Functions;
 import edu.pucmm.ecommerceapp.helpers.KProgressHUDUtils;
 import edu.pucmm.ecommerceapp.models.User;
+import edu.pucmm.ecommerceapp.models.FixUser;
 import edu.pucmm.ecommerceapp.retrofit.UserApiService;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -31,17 +31,13 @@ import retrofit2.converter.gson.GsonConverterFactory;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.TimeZone;
 
 public class LogInFragment extends Fragment {
 
     private TextView registerTxt;
-    private EditText mail, password;
     private Button login;
-    private List<View> views = new ArrayList<>();
     private FragmentLogInBinding binding;
 
     @Override
@@ -50,17 +46,7 @@ public class LogInFragment extends Fragment {
         // Inflate the layout for this fragment
         binding = FragmentLogInBinding.inflate(inflater, container, false);
 
-        registerTxt = binding.registerTXT;
-        login = binding.loginBTN;
-
-        mail = binding.mailInput;
-        password = binding.passwordInput;
-
-        views.add(mail);
-        views.add(password);
-
-
-        registerTxt.setOnClickListener(v -> {
+        binding.registerTXT.setOnClickListener(v -> {
 
             getActivity().getSupportFragmentManager()
                     .beginTransaction()
@@ -70,8 +56,12 @@ public class LogInFragment extends Fragment {
                     .commit();
         });
 
-        login.setOnClickListener(v -> {
+        binding.loginBTN.setOnClickListener(v -> {
             userLogIn();
+        });
+
+        binding.forgotPassTXT.setOnClickListener(v -> {
+            FancyToast.makeText(getContext(), "Not implemented", FancyToast.LENGTH_LONG, FancyToast.WARNING, false).show();
         });
 
         autoFill();
@@ -79,45 +69,42 @@ public class LogInFragment extends Fragment {
         return binding.getRoot();
     }
 
-    private void userLogIn(){
+    private void userLogIn() {
 
-        if (Functions.isEmpty((View) views)) {
+        if (Functions.isEmpty(binding.mailInput, binding.passwordInput)) {
             return;
         }
 
         KProgressHUD progressDialog = new KProgressHUDUtils(getContext()).showAuthenticating();
 
         //transforming to json
-        JsonObject user = new JsonObject();
+        final JsonObject user = new JsonObject();
         user.addProperty("email", binding.mailInput.getText().toString().trim());
         user.addProperty("password", binding.passwordInput.getText().toString().trim());
 
         GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.registerTypeAdapter(User.class, dateJsonDeserializer);
+        gsonBuilder.registerTypeAdapter(FixUser.class, dateJsonDeserializer);
 
-        Retrofit retrofit = new Retrofit.Builder()
+        final Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(GlobalVariables.API_URL)
                 .addConverterFactory(GsonConverterFactory.create(gsonBuilder.create()))
                 .build();
 
-        Call<User> userCall = retrofit.create(UserApiService.class).login(user);
+        final Call<User> userCall = retrofit.create(UserApiService.class).login(user);
         userCall.enqueue(new Callback<User>() {
             @Override
             public void onResponse(Call<User> call, Response<User> response) {
                 progressDialog.dismiss();
                 switch (response.code()) {
                     case 200:
-
-                        FancyToast.makeText(getContext(), "Successfully Logged In", FancyToast.LENGTH_LONG, FancyToast.SUCCESS, false).show();
-
+                        FancyToast.makeText(getContext(), "Successfully login", FancyToast.LENGTH_LONG, FancyToast.SUCCESS, false).show();
                         GlobalVariables.setUSERSESSION(response.body());
-
                         System.err.println(response.body().toString());
-
                         goToMainMenu();
                         break;
                     default:
                         try {
+                            System.err.println(response.errorBody().string());
                             FancyToast.makeText(getContext(), response.errorBody().string(), FancyToast.LENGTH_LONG, FancyToast.ERROR, false).show();
                         } catch (IOException e) {
                             e.printStackTrace();
@@ -128,6 +115,7 @@ public class LogInFragment extends Fragment {
             @Override
             public void onFailure(Call<User> call, Throwable error) {
                 progressDialog.dismiss();
+                System.err.println(error.getMessage());
                 FancyToast.makeText(getContext(), error.getMessage(), FancyToast.LENGTH_LONG, FancyToast.ERROR, false).show();
             }
         });
@@ -138,6 +126,7 @@ public class LogInFragment extends Fragment {
         startActivity(intent);
         getActivity().finish();
     }
+
 
     private final JsonDeserializer<User> dateJsonDeserializer = (json, typeOfT, context) -> {
         final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
@@ -154,8 +143,8 @@ public class LogInFragment extends Fragment {
         user.setContact(jo.get("contact").getAsString());
         user.setPhoto(jo.get("photo").getAsString());
         user.setBirthday(dateFormat.format(new Date(jo.get("birthday").getAsLong())));
-
         return user;
+
     };
 
     private void autoFill() {

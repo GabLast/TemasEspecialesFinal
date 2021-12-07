@@ -11,6 +11,7 @@ import retrofit2.http.PUT;
 import java.util.List;
 
 public interface UserApiService {
+
     @GET("users")
     Call<List<User>> getAll();
 

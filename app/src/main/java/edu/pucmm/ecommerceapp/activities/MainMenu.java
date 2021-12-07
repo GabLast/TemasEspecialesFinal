@@ -49,7 +49,7 @@ public class MainMenu extends AppCompatActivity {
                 .build();
 
         NavController navController = Navigation.findNavController(this, R.id.main_menu_fragment);
-        //this puts the button in the top navbar
+        //this puts the button to show the left navbar in the top navbar
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
 
@@ -65,6 +65,7 @@ public class MainMenu extends AppCompatActivity {
         CircularImageView profile = headerLayout.findViewById(R.id.profile);
         TextView titleMain = headerLayout.findViewById(R.id.left_TXT_View);
         if(GlobalVariables.getUSERSESSION() != null) {
+//            System.out.println(GlobalVariables.getUSERSESSION().toString());
             titleMain.setText(GlobalVariables.getUSERSESSION().getFirstName() + " " + GlobalVariables.getUSERSESSION().getLastName());
             if (GlobalVariables.getUSERSESSION().getPhoto() != null && !GlobalVariables.getUSERSESSION().getPhoto().isEmpty()) {
                 Firebase.getConstantInstance().download(GlobalVariables.getUSERSESSION().getPhoto(), new NetResponse<Bitmap>() {

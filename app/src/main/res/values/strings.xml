@@ -22,10 +22,23 @@
     <string name="menu_home">Home</string>
     <string name="menu_category">Category</string>
     <string name="menu_product">Product</string>
+    <string name="soon">To Be Implemented</string>
     <string name="menu_help">Help</string>
     <string name="menu_profile">Profile</string>
     <string name="menu_logout">Log Out</string>
     <string name="action_search">Search</string>
     <string name="action_notifications">Notifications</string>
     <string name="action_cart">Cart</string>
+    <string name="productname">Product Name</string>
+    <string name="categoryname">Category Name</string>
+    <string name="isAvailable">is Available?</string>
+    <string name="currentstock">Current Stock</string>
+    <string name="stockAvailable">Stock Available</string>
+    <string name="price">Price</string>
+    <string name="selectImages">Select Images</string>
+    <string name="previous">Previous</string>
+    <string name="next">Next</string>
+    <string name="delete">Delete</string>
+    <string name="action_manager">Manage</string>
+    <string name="action_delete">Delete</string>
 </resources>
