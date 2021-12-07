@@ -75,7 +75,7 @@
 
     <fragment
             android:id="@+id/cart_badge"
-            android:name="edu.pucmm.ecommerceapp.fragments.product.ProductManagerFragment"
+            android:name="edu.pucmm.ecommerceapp.fragments.HomeFragment"
             android:label="@string/menu_category"
             tools:layout="@layout/fragment_home">
 

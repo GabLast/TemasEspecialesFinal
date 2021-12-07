@@ -36,8 +36,6 @@ import java.util.TimeZone;
 
 public class LogInFragment extends Fragment {
 
-    private TextView registerTxt;
-    private Button login;
     private FragmentLogInBinding binding;
 
     @Override
@@ -97,7 +95,7 @@ public class LogInFragment extends Fragment {
                 progressDialog.dismiss();
                 switch (response.code()) {
                     case 200:
-                        FancyToast.makeText(getContext(), "Successfully login", FancyToast.LENGTH_LONG, FancyToast.SUCCESS, false).show();
+                        FancyToast.makeText(getContext(), "Successfully logged in", FancyToast.LENGTH_LONG, FancyToast.SUCCESS, false).show();
                         GlobalVariables.setUSERSESSION(response.body());
                         System.err.println(response.body().toString());
                         goToMainMenu();
