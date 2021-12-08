@@ -18,7 +18,8 @@ public interface CategoryDao {
     @Query("SELECT * FROM category WHERE idCategory = :id")
     Category find(int id);
 
-    @Insert
+    @Transaction
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     long insert(Category a);
 
     @Update

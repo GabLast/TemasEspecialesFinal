@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.DefaultItemAnimator;
@@ -20,6 +21,7 @@ import edu.pucmm.ecommerceapp.database.AppExecutors;
 import edu.pucmm.ecommerceapp.database.DAOs.ProductDao;
 import edu.pucmm.ecommerceapp.databinding.FragmentProductManagerBinding;
 import edu.pucmm.ecommerceapp.fragments.ViewModelFactory;
+import edu.pucmm.ecommerceapp.fragments.category.CategoryViewModel;
 import edu.pucmm.ecommerceapp.helpers.Functions;
 import edu.pucmm.ecommerceapp.helpers.GlobalVariables;
 import edu.pucmm.ecommerceapp.listeners.OnItemTouchListener;
@@ -29,6 +31,8 @@ import edu.pucmm.ecommerceapp.models.Product;
 import edu.pucmm.ecommerceapp.models.User;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -54,14 +58,22 @@ public class ProductManagerFragment extends Fragment {
         binding = FragmentProductManagerBinding.inflate(inflater, container, false);
 
         binding.fab.setOnClickListener(v -> {
+            final Bundle bundle = new Bundle();
+            bundle.putSerializable(GlobalVariables.PRODUCT, null);
             NavHostFragment.findNavController(ProductManagerFragment.this)
                     .navigate(R.id.nav_product_to_create_product);
         });
 
-        if(GlobalVariables.getUSERSESSION() != null){
-            if(GlobalVariables.getUSERSESSION().getRol().equals(User.ROL.CUSTOMER)){
+        if (GlobalVariables.getUSERSESSION() != null) {
+            if (GlobalVariables.getUSERSESSION().getRol().equals(User.ROL.CUSTOMER)) {
                 binding.fab.setVisibility(View.INVISIBLE);
             }
+        }
+
+        try {
+            category = (Category) getArguments().getSerializable(GlobalVariables.CATEGORY);
+        } catch (NullPointerException e) {
+            System.err.println("No category");
         }
 
         return binding.getRoot();
@@ -104,15 +116,45 @@ public class ProductManagerFragment extends Fragment {
                     .navigate(R.id.nav_product_to_add_to_cart, bundle);
         });
 
+        //adding the products to the view
         ProductViewModel productViewModel = new ViewModelProvider(this, new ViewModelFactory(getContext()))
                 .get(ProductViewModel.class);
 
-        productViewModel.getListLiveData().observe(this, elements -> {
-            final Stream<Product> stream = GlobalVariables.getUSERSESSION().getRol().equals(User.ROL.CUSTOMER)
-                    ? elements.stream().filter(f -> (f.isAvailable()))
-                    : elements.stream();
+        productViewModel.getListLiveData().observe(this, new Observer<List<Product>>() {
+            @Override
+            public void onChanged(List<Product> products) {
 
-            adapter.setElements(stream.filter(f -> category == null ? true : f.getIdCategory() == category.getIdCategory()).collect(Collectors.toList()));
+                if (GlobalVariables.getUSERSESSION().getRol().equals(User.ROL.CUSTOMER)) {
+                    List<Product> aux = new ArrayList<>();
+                    for (Product p : products) {
+                        if (p.isAvailable()) {
+                            System.out.println(p.getName() + " " + p.getIdProduct());
+                            if (category != null) {
+                                if (category.getIdCategory() == p.getIdProduct()) {
+                                    aux.add(p);
+                                }
+                            } else {
+                                aux.add(p);
+                            }
+
+                        }
+                    }
+                    adapter.setElements(aux);
+                } else {
+                    if (category != null) {
+                        List<Product> aux = new ArrayList<>();
+                        for (Product p : products) {
+                            if (category.getIdCategory() == p.getIdCategory()) {
+                                aux.add(p);
+                            }
+                        }
+                        adapter.setElements(aux);
+                    } else {
+                        adapter.setElements(products);
+                    }
+
+                }
+            }
         });
     }
 
@@ -120,7 +162,8 @@ public class ProductManagerFragment extends Fragment {
 
         AppExecutors.getInstance().diskIO().execute(() -> {
             productDao.delete(element);
-            getActivity().runOnUiThread(() -> FancyToast.makeText(getContext(), "Successfully deleted!", FancyToast.LENGTH_LONG, FancyToast.SUCCESS, false).show());
+            getActivity().runOnUiThread(() -> FancyToast.makeText(getContext(), "The product has been deleted",
+                    FancyToast.LENGTH_LONG, FancyToast.SUCCESS, false).show());
         });
 //        if (element.carousels != null && !element.carousels.isEmpty()) {
 //            FirebaseNetwork.obtain().deletes(element.carousels, new NetResponse<String>() {

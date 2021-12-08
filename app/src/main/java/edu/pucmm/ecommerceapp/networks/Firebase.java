@@ -17,7 +17,7 @@ public class Firebase {
 
     private static final String PATH_UPLOAD = "photos/";
     private static final String URL_DOWNLOAD = String.format("gs://e-commerce-final-a34e4.appspot.com/%s", PATH_UPLOAD);
-    private static final long ONE_MEGABYTE = 1024 * 1024;
+    private static final long ONE_MEGABYTE = 1024 * 1024 * 15;
 
     private static Firebase sInstance;
 
@@ -54,20 +54,21 @@ public class Firebase {
 
     public void upload(final Uri uri, final String key, final NetResponse<String> response) {
         final StorageReference reference = getStorageReference().child(PATH_UPLOAD + key);
-
-        reference.putFile(uri)
-                .addOnSuccessListener(taskSnapshot -> {
-                    Log.i(TAG, "upload:onSuccess");
-                    taskSnapshot.getUploadSessionUri();
-                    response.onResponse(key);
-                }).addOnCanceledListener(() -> Log.i(TAG, "upload:onCanceled"))
-                .addOnCompleteListener(task -> Log.i(TAG, "upload:onComplete"))
-                .addOnFailureListener(e -> {
-                    Log.e(TAG, "upload:onFailure");
-                    response.onFailure(e);
-                })
-                .addOnPausedListener(taskSnapshot -> Log.i(TAG, "upload:onPaused"))
-                .addOnProgressListener(taskSnapshot -> Log.i(TAG, "upload:onProgress"));
+        if (uri != null) {
+            reference.putFile(uri)
+                    .addOnSuccessListener(taskSnapshot -> {
+                        Log.i(TAG, "upload:onSuccess");
+                        taskSnapshot.getUploadSessionUri();
+                        response.onResponse(key);
+                    }).addOnCanceledListener(() -> Log.i(TAG, "upload:onCanceled"))
+                    .addOnCompleteListener(task -> Log.i(TAG, "upload:onComplete"))
+                    .addOnFailureListener(e -> {
+                        Log.e(TAG, "upload:onFailure");
+                        response.onFailure(e);
+                    })
+                    .addOnPausedListener(taskSnapshot -> Log.i(TAG, "upload:onPaused"))
+                    .addOnProgressListener(taskSnapshot -> Log.i(TAG, "upload:onProgress"));
+        }
     }
 
     public void download(final String key, final NetResponse<Bitmap> response) {

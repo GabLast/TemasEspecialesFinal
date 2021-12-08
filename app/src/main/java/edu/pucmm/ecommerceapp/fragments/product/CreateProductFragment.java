@@ -23,6 +23,7 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import androidx.navigation.fragment.NavHostFragment;
 import com.shashank.sony.fancytoastlib.FancyToast;
 import edu.pucmm.ecommerceapp.R;
 import edu.pucmm.ecommerceapp.database.AppDataBase;
@@ -30,15 +31,18 @@ import edu.pucmm.ecommerceapp.database.AppExecutors;
 import edu.pucmm.ecommerceapp.database.DAOs.CategoryDao;
 import edu.pucmm.ecommerceapp.database.DAOs.ProductDao;
 import edu.pucmm.ecommerceapp.databinding.FragmentCreateProductBinding;
+import edu.pucmm.ecommerceapp.fragments.category.CategoryManagerFragment;
 import edu.pucmm.ecommerceapp.helpers.Functions;
 import edu.pucmm.ecommerceapp.helpers.GlobalVariables;
 import edu.pucmm.ecommerceapp.models.Category;
 import edu.pucmm.ecommerceapp.models.Product;
+import edu.pucmm.ecommerceapp.models.User;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -50,19 +54,22 @@ public class CreateProductFragment extends Fragment {
     private CategoryDao categoryDao;
     private Product element;
     private Category category;
+    private List<Category> list = new ArrayList<>();
     //Image management objects
     private int position = 0;
     private ArrayList<Drawable> drawables;
     private ArrayList<Uri> uris;
+    private boolean isInsert;
+    private boolean wasInserted;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         productDao = AppDataBase.getInstance(getContext()).productDao();
         categoryDao = AppDataBase.getInstance(getContext()).categoryDao();
-
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -70,8 +77,30 @@ public class CreateProductFragment extends Fragment {
         binding = FragmentCreateProductBinding.inflate(inflater, container, false);
         binding.availableCheck.setChecked(true);
 
-        ArrayAdapter arrayAdapter = new ArrayAdapter(getContext(), R.layout.pretty_spinner_item, categoryDao.getAll());
-        binding.categorySpinner.setAdapter(arrayAdapter);
+        try {
+            element = (Product) getArguments().getSerializable(GlobalVariables.PRODUCT);
+            isInsert = false;
+        } catch (NullPointerException e) {
+            System.err.println("No value -> Not editing");
+            isInsert = true;
+        }
+
+        categoryDao.findAll().observe(this, cats -> {
+            ArrayAdapter<Category> adapter;
+            if (GlobalVariables.getUSERSESSION().getRol().equals(User.ROL.SELLER)) {
+                List<Category> aux = new ArrayList<>();
+                for (Category c : cats) {
+                    if (c.isAvailable()) {
+                        aux.add(c);
+                    }
+                }
+                adapter = new ArrayAdapter<>(getContext(), R.layout.pretty_spinner_item, aux);
+            }else {
+                adapter = new ArrayAdapter<>(getContext(), R.layout.pretty_spinner_item, cats);
+            }
+            binding.categorySpinner.setAdapter(adapter);
+        });
+
         drawables = new ArrayList<>();
         uris = new ArrayList<>();
 
@@ -84,8 +113,11 @@ public class CreateProductFragment extends Fragment {
         setHasOptionsMenu(true);
 
         if (element != null) {
+            binding.priceTXT.setText(String.valueOf(element.getPrice()));
+            binding.availableCheck.setChecked(element.isAvailable());
+            binding.productNameTXT.setText(element.getName());
+            binding.stockAvailableTXT.setText(element.getStockAvailable());
 
-            
         }
 
         binding.images.setFactory(() -> new ImageView(getContext()));
@@ -108,11 +140,11 @@ public class CreateProductFragment extends Fragment {
         binding.select.setOnClickListener(v -> photoOptions());
 
         binding.registerProductBTN.setOnClickListener(v -> {
-            if(Functions.isEmpty(binding.productNameTXT, binding.priceTXT, binding.stockAvailableTXT)){
+            if (Functions.isEmpty(binding.productNameTXT, binding.priceTXT, binding.stockAvailableTXT)) {
                 return;
             }
 
-            if(binding.categorySpinner.getText().toString().isEmpty()){
+            if (binding.categorySpinner.getText().toString().isEmpty()) {
                 binding.categorySpinner.setError("No category was chosen");
                 return;
             }
@@ -125,7 +157,7 @@ public class CreateProductFragment extends Fragment {
     }
 
     private void register() {
-        if(element == null){
+        if (element == null) {
             element = new Product();
         }
 
@@ -137,14 +169,26 @@ public class CreateProductFragment extends Fragment {
 
         AppExecutors.getInstance().diskIO().execute(() -> {
 
-            if (Long.valueOf(element.getIdProduct()).equals(0)) {
+            if (isInsert) {
                 long uid = productDao.insert(element);
-                element.setIdProduct(uid);
+                element.setIdProduct((int) uid);
+                wasInserted = true;
+                isInsert = false;
             } else {
                 productDao.update(element);
+                wasInserted = false;
             }
 
         });
+
+        if (wasInserted) {
+            FancyToast.makeText(getContext(), "The product has been created", FancyToast.LENGTH_LONG, FancyToast.SUCCESS, false).show();
+        } else {
+            FancyToast.makeText(getContext(), "The product has been updated", FancyToast.LENGTH_LONG, FancyToast.SUCCESS, false).show();
+        }
+
+        NavHostFragment.findNavController(CreateProductFragment.this)
+                .navigate(R.id.create_prod_to_view_all);
     }
 
     private void photoOptions() {

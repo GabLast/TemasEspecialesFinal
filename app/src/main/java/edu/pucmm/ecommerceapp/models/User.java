@@ -1,8 +1,9 @@
 package edu.pucmm.ecommerceapp.models;
 
+import java.io.Serializable;
 import java.util.Objects;
 
-public class User {
+public class User implements Serializable {
 
     public enum ROL {SELLER, CUSTOMER}
 

@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.DefaultItemAnimator;
@@ -21,17 +22,21 @@ import edu.pucmm.ecommerceapp.database.AppExecutors;
 import edu.pucmm.ecommerceapp.database.DAOs.CategoryDao;
 import edu.pucmm.ecommerceapp.databinding.FragmentCategoryManagerBinding;
 import edu.pucmm.ecommerceapp.fragments.ViewModelFactory;
+import edu.pucmm.ecommerceapp.fragments.product.ProductManagerFragment;
 import edu.pucmm.ecommerceapp.helpers.Functions;
 import edu.pucmm.ecommerceapp.helpers.GlobalVariables;
 import edu.pucmm.ecommerceapp.listeners.OnItemTouchListener;
 import edu.pucmm.ecommerceapp.listeners.OptionsMenuListener;
 import edu.pucmm.ecommerceapp.models.Category;
+import edu.pucmm.ecommerceapp.models.Product;
 import edu.pucmm.ecommerceapp.models.User;
 import edu.pucmm.ecommerceapp.networks.Firebase;
 import edu.pucmm.ecommerceapp.networks.NetResponse;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -46,6 +51,9 @@ public class CategoryManagerFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         categoryDao = AppDataBase.getInstance(getContext()).categoryDao();
+        AppExecutors.getInstance().diskIO().execute(() -> {
+            System.err.println("Total categories: " + categoryDao.getAll().size());
+        });
 
     }
 
@@ -56,6 +64,8 @@ public class CategoryManagerFragment extends Fragment {
 
 
         binding.fabcat.setOnClickListener(v -> {
+            final Bundle bundle = new Bundle();
+            bundle.putSerializable(GlobalVariables.CATEGORY, null);
             NavHostFragment.findNavController(CategoryManagerFragment.this)
                     .navigate(R.id.add_cat_to_create_cat);
         });
@@ -92,7 +102,7 @@ public class CategoryManagerFragment extends Fragment {
         adapter.setOptionsMenuListener((OptionsMenuListener<Category>) (view1, element) -> {
             Functions.popupMenu(getContext(), view1, () -> {
                 final Bundle bundle = new Bundle();
-                bundle.putSerializable(GlobalVariables.CATEGORY, (Serializable) element);
+                bundle.putSerializable(GlobalVariables.CATEGORY, element);
 
                 NavHostFragment.findNavController(CategoryManagerFragment.this)
                         .navigate(R.id.add_cat_to_create_cat, bundle);
@@ -106,23 +116,33 @@ public class CategoryManagerFragment extends Fragment {
         //setting category touch to view products from select category
         adapter.setOnItemTouchListener((OnItemTouchListener<Category>) element -> {
             final Bundle bundle = new Bundle();
-            bundle.putSerializable(GlobalVariables.CATEGORY, (Serializable) element);
+            bundle.putSerializable(GlobalVariables.CATEGORY, element);
 
             NavHostFragment.findNavController(CategoryManagerFragment.this)
                     .navigate(R.id.nav_cat_to_nav_product, bundle);
         });
 
-
         //adding the categories to the view
         CategoryViewModel categoryViewModel = new ViewModelProvider(this, new ViewModelFactory(getContext()))
                 .get(CategoryViewModel.class);
 
-        categoryViewModel.getListLiveData().observe(this, elements -> {
-            final Stream<Category> stream = GlobalVariables.getUSERSESSION().getRol().equals(User.ROL.CUSTOMER)
-                    ? elements.stream().filter(f -> (f.isAvailable()))
-                    : elements.stream();
+        categoryViewModel.getListLiveData().observe(this, new Observer<List<Category>>() {
+            @Override
+            public void onChanged(List<Category> cats) {
 
-            adapter.setElements(stream.collect(Collectors.toList()));
+                if(GlobalVariables.getUSERSESSION().getRol().equals(User.ROL.CUSTOMER)){
+                    List<Category> aux = new ArrayList<>();
+                    for(Category c : cats) {
+                        if(c.isAvailable()){
+                            System.out.println(c.getName() + " "+ c.getIdCategory());
+                            aux.add(c);
+                        }
+                    }
+                    adapter.setElements(aux);
+                }else {
+                    adapter.setElements(cats);
+                }
+            }
         });
 
     }

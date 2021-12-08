@@ -1,5 +1,6 @@
 package edu.pucmm.ecommerceapp.models;
 
+import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
@@ -9,29 +10,35 @@ import java.io.Serializable;
 public class Product implements Serializable {
 
     @PrimaryKey(autoGenerate = true)
-    private long idProduct;
-    private long idCategory;
+    @ColumnInfo(name = "idProduct")
+    private int idProduct;
+    @ColumnInfo(name = "idCategory")
+    private int idCategory;
+    @ColumnInfo(name = "name")
     private String name;
+    @ColumnInfo(name = "available")
     private boolean available;
+    @ColumnInfo(name = "stockAvailable")
     private int stockAvailable;
+    @ColumnInfo(name = "price")
     private double price;
 
     public Product() {
     }
 
-    public long getIdProduct() {
+    public int getIdProduct() {
         return idProduct;
     }
 
-    public void setIdProduct(long idProduct) {
+    public void setIdProduct(int idProduct) {
         this.idProduct = idProduct;
     }
 
-    public long getIdCategory() {
+    public int getIdCategory() {
         return idCategory;
     }
 
-    public void setIdCategory(long idCategory) {
+    public void setIdCategory(int idCategory) {
         this.idCategory = idCategory;
     }
 

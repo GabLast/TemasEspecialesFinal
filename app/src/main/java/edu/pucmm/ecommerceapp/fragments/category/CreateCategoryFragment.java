@@ -1,7 +1,6 @@
 package edu.pucmm.ecommerceapp.fragments.category;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -15,22 +14,21 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import androidx.navigation.fragment.NavHostFragment;
+import com.kaopiz.kprogresshud.KProgressHUD;
 import com.shashank.sony.fancytoastlib.FancyToast;
 import edu.pucmm.ecommerceapp.R;
 import edu.pucmm.ecommerceapp.database.AppDataBase;
 import edu.pucmm.ecommerceapp.database.AppExecutors;
 import edu.pucmm.ecommerceapp.database.DAOs.CategoryDao;
-import edu.pucmm.ecommerceapp.databinding.FragmentCategoryManagerBinding;
 import edu.pucmm.ecommerceapp.databinding.FragmentCreateCategoryBinding;
-import edu.pucmm.ecommerceapp.databinding.FragmentCreateProductBinding;
 import edu.pucmm.ecommerceapp.helpers.Functions;
 import edu.pucmm.ecommerceapp.helpers.GlobalVariables;
+import edu.pucmm.ecommerceapp.helpers.KProgressHUDUtils;
 import edu.pucmm.ecommerceapp.helpers.PhotoOptions;
 import edu.pucmm.ecommerceapp.models.Category;
 import edu.pucmm.ecommerceapp.networks.Firebase;
@@ -39,8 +37,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -51,6 +48,8 @@ public class CreateCategoryFragment extends Fragment {
     private CategoryDao categoryDao;
     private Category element;
     private Uri uri;
+    private boolean isInsert;
+    private boolean wasInserted;
 
     @Override
     public void onCreate(@Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
@@ -63,7 +62,17 @@ public class CreateCategoryFragment extends Fragment {
                              Bundle savedInstanceState) {
         binding = FragmentCreateCategoryBinding.inflate(inflater, container, false);
         binding.availableCheckCat.setChecked(true);
-        element = (Category) getArguments().getSerializable(GlobalVariables.CATEGORY);
+
+        try {
+            element = (Category) getArguments().getSerializable(GlobalVariables.CATEGORY);
+            isInsert = false;
+        } catch (NullPointerException e) {
+            element = null;
+            isInsert = true;
+            System.err.println("No value -> Not editing");
+        }
+
+
         return binding.getRoot();
     }
 
@@ -77,6 +86,7 @@ public class CreateCategoryFragment extends Fragment {
             binding.availableCheckCat.setChecked(element.isAvailable());
 
             Functions.downloadImage(element.getPhoto(), binding.image);
+
         }
 
         binding.image.setOnClickListener(v -> {
@@ -85,49 +95,83 @@ public class CreateCategoryFragment extends Fragment {
 
         binding.registerCatBTN.setOnClickListener(v -> {
 
-            if(Functions.isEmpty(binding.categorynameTXT)){
+            if (Functions.isEmpty(binding.categorynameTXT)) {
                 return;
             }
-
             register();
         });
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     private void register() {
         if (element == null) {
             element = new Category();
         }
+
+        AtomicBoolean pic = new AtomicBoolean(false);
         element.setName(binding.categorynameTXT.getText().toString());
         element.setAvailable(binding.availableCheckCat.isChecked());
-
         AppExecutors.getInstance().diskIO().execute(() -> {
-            if (Long.valueOf(element.getIdCategory()).equals(0)) {
+
+            if (isInsert) {
                 long uid = categoryDao.insert(element);
+                System.err.println("insert uid: " + uid);
                 element.setIdCategory((int) uid);
+                wasInserted = true;
+                isInsert = false;
+                pic.set(true);
             } else {
                 categoryDao.update(element);
-            }
-
-            if (uri != null && element.getIdCategory() != 0) {
-                Firebase.getConstantInstance().upload(uri, String.format("categories/%s.jpg", element.getIdCategory()),
-                        new NetResponse<String>() {
-                            @Override
-                            public void onResponse(String response) {
-                                FancyToast.makeText(getContext(), "Successfully uploaded image", FancyToast.LENGTH_LONG, FancyToast.SUCCESS, false).show();
-                                element.setPhoto(response);
-                                AppExecutors.getInstance().diskIO().execute(() -> {
-                                    categoryDao.update(element);
-                                });
-                            }
-
-                            @Override
-                            public void onFailure(Throwable t) {
-                                FancyToast.makeText(getContext(), t.getMessage(), FancyToast.LENGTH_LONG, FancyToast.ERROR, false).show();
-                            }
-                        });
+                wasInserted = false;
             }
         });
+
+        //have to use consumer. if not,
+        //due to room creating another thread, the category id
+        //doesnt sync up properly, making it not able to
+        //upload a pic on the first time the element is inserted
+        final KProgressHUD progressDialog = new KProgressHUDUtils(getActivity()).showConnecting();
+        if (uri != null && element.getIdCategory() != 0) {
+            consumer.accept(progressDialog);
+        } else {
+            progressDialog.dismiss();
+        }
+
+        if (wasInserted) {
+            FancyToast.makeText(getContext(), "The category has been created", FancyToast.LENGTH_LONG, FancyToast.SUCCESS, false).show();
+        } else {
+            FancyToast.makeText(getContext(), "The category has been updated", FancyToast.LENGTH_LONG, FancyToast.SUCCESS, false).show();
+        }
+
+        NavHostFragment.findNavController(CreateCategoryFragment.this)
+                .navigate(R.id.create_cat_to_view_cats);
+
     }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    private final Consumer<KProgressHUD> consumer = new Consumer<KProgressHUD>() {
+        @Override
+        public void accept(KProgressHUD progressDialog) {
+            Firebase.getConstantInstance().upload(uri, String.format("categories/%s.jpg", element.getIdCategory()),
+                    new NetResponse<String>() {
+                        @Override
+                        public void onResponse(String response) {
+                            FancyToast.makeText(getContext(), "Successfully upload image", FancyToast.LENGTH_LONG, FancyToast.SUCCESS, false).show();
+                            element.setPhoto(response);
+                            AppExecutors.getInstance().diskIO().execute(() -> {
+                                categoryDao.update(element);
+                            });
+                            progressDialog.dismiss();
+                        }
+
+                        @Override
+                        public void onFailure(Throwable t) {
+                            progressDialog.dismiss();
+                            FancyToast.makeText(getContext(), t.getMessage(), FancyToast.LENGTH_LONG, FancyToast.ERROR, false).show();
+                        }
+                    });
+        }
+    };
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     private void photoOptions() {

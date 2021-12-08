@@ -31,7 +31,7 @@
     <string name="action_cart">Cart</string>
     <string name="productname">Product Name</string>
     <string name="categoryname">Category Name</string>
-    <string name="isAvailable">is Available?</string>
+    <string name="isAvailable">Is it Available?</string>
     <string name="currentstock">Current Stock</string>
     <string name="stockAvailable">Stock Available</string>
     <string name="price">Price</string>

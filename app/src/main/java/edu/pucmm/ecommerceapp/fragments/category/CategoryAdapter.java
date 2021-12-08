@@ -32,7 +32,7 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.MyView
     @NonNull
     @NotNull
     @Override
-    public MyViewHolder onCreateViewHolder(@NonNull @NotNull ViewGroup parent, int viewType) {
+    public CategoryAdapter.MyViewHolder onCreateViewHolder(@NonNull @NotNull ViewGroup parent, int viewType) {
         final LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
         binding = CategoryHolderBinding.inflate(layoutInflater, parent, false);
         return new CategoryAdapter.MyViewHolder(binding.getRoot());
@@ -40,10 +40,10 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.MyView
 
     @Override
     public void onBindViewHolder(@NonNull @NotNull MyViewHolder holder, int position) {
-        Category element = elements.get(position);
-        holder.name.setText(element.getName());
+        final Category element = elements.get(position);
+        holder.name.setText(element.getName().toString());
 
-        if (GlobalVariables.getUSERSESSION() != null) {
+        try {
             if (!GlobalVariables.getUSERSESSION().getRol().equals(User.ROL.SELLER)) {
                 holder.action.setVisibility(View.INVISIBLE);
             }
@@ -65,22 +65,21 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.MyView
                     onItemTouchListener.onClick(element);
                 }
             });
-
-
-            try {
-                Functions.downloadImage(element.getPhoto(), binding.avatar);
-            }catch (Exception e) {
-                System.err.println(e);
-            }
+        }catch (NullPointerException e) {
 
         }
+
+        Functions.downloadImage(element.getPhoto(), binding.avatar);
 
     }
 
 
     @Override
     public int getItemCount() {
-        return 0;
+        if (elements == null) {
+            return 0;
+        }
+        return elements.size();
     }
 
     public void setElements(List<Category> elements) {

@@ -34,6 +34,10 @@
             android:name="edu.pucmm.ecommerceapp.fragments.category.CreateCategoryFragment"
             android:label="@string/menu_category"
             tools:layout="@layout/fragment_create_category">
+
+        <action
+                android:id="@+id/create_cat_to_view_cats"
+                app:destination="@id/nav_category"/>
     </fragment>
 
 
@@ -61,6 +65,10 @@
             android:name="edu.pucmm.ecommerceapp.fragments.product.CreateProductFragment"
             android:label="@string/menu_product"
             tools:layout="@layout/fragment_create_product">
+
+        <action
+                android:id="@+id/create_prod_to_view_all"
+                app:destination="@id/nav_product"/>
     </fragment>
 
     <fragment

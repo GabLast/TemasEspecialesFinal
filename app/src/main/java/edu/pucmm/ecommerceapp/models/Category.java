@@ -1,24 +1,31 @@
 package edu.pucmm.ecommerceapp.models;
 
+import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
+import java.io.Serializable;
+
 @Entity
-public class Category {
+public class Category implements Serializable {
     @PrimaryKey(autoGenerate = true)
-    private long idCategory;
+    @ColumnInfo(name = "idCategory")
+    private int idCategory;
+    @ColumnInfo(name = "name")
     private String name;
+    @ColumnInfo(name = "available")
     private boolean available;
+    @ColumnInfo(name = "photo")
     private String photo;
 
     public Category() {
     }
 
-    public long getIdCategory() {
+    public int getIdCategory() {
         return idCategory;
     }
 
-    public void setIdCategory(long idCategory) {
+    public void setIdCategory(int idCategory) {
         this.idCategory = idCategory;
     }
 

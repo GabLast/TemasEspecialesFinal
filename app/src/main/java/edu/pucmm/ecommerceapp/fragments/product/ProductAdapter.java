@@ -17,7 +17,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.MyViewHolder>{
+public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.MyViewHolder> {
 
     private ProductHolderBinding binding;
     private OptionsMenuListener optionsMenuListener;
@@ -32,22 +32,20 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.MyViewHo
     @Override
     public ProductAdapter.MyViewHolder onCreateViewHolder(@NonNull @NotNull ViewGroup parent, int viewType) {
         final LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
-
         binding = ProductHolderBinding.inflate(layoutInflater, parent, false);
-
         return new ProductAdapter.MyViewHolder(binding.getRoot());
     }
 
     @Override
     public void onBindViewHolder(@NonNull @NotNull MyViewHolder holder, int position) {
-        Product element = elements.get(position);
+        final Product element = elements.get(position);
         holder.itemCode.setText(String.valueOf(element.getIdProduct()));
-        holder.itemName.setText(element.getName());
+        holder.itemName.setText(element.getName().toString());
         holder.price.setText(String.valueOf(element.getPrice()));
 
-        if(GlobalVariables.getUSERSESSION() != null){
+        try {
 
-            if(!GlobalVariables.getUSERSESSION().getRol().equals(User.ROL.SELLER)){
+            if (!GlobalVariables.getUSERSESSION().getRol().equals(User.ROL.SELLER)) {
                 holder.action.setVisibility(View.INVISIBLE);
             }
 
@@ -76,12 +74,19 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.MyViewHo
                     optionsMenuListener.onCreateOptionsMenu(holder.action, element);
                 }
             });
+
+        }catch (NullPointerException e) {
+
         }
+
     }
 
     @Override
     public int getItemCount() {
-        return 0;
+        if (elements == null) {
+            return 0;
+        }
+        return elements.size();
     }
 
     public void setOptionsMenuListener(OptionsMenuListener optionsMenuListener) {

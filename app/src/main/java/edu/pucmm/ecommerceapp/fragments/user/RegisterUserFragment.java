@@ -47,6 +47,7 @@ import java.util.function.Consumer;
 
 public class RegisterUserFragment extends Fragment {
 
+    private User user = new User();
     private Uri uri;
     private FragmentRegisterUserBinding binding;
 
@@ -111,7 +112,6 @@ public class RegisterUserFragment extends Fragment {
             return;
         }
 
-        User user = new User();
         user.setFirstName(binding.firstnameTXT.getText().toString().trim());
         user.setLastName(binding.lastnameTXT.getText().toString().trim());
         user.setEmail(binding.emailTXT.getText().toString().trim());
@@ -143,7 +143,7 @@ public class RegisterUserFragment extends Fragment {
             }
 
             if(uri != null){
-                Firebase.getConstantInstance().upload(uri, String.format("profile/%s.jpg", user.getFirstName()+ user.getContact()+ user.getBirthday()),
+                Firebase.getConstantInstance().upload(uri, String.format("profile/%s.jpg", user.getUid()),
                         new NetResponse<String>() {
                             @Override
                             public void onResponse(String response) {
@@ -177,6 +177,7 @@ public class RegisterUserFragment extends Fragment {
                 switch (response.code()) {
                     case 201:
                         FancyToast.makeText(getContext(), "User has been registered", FancyToast.LENGTH_LONG, FancyToast.SUCCESS, false).show();
+                        user.setUid(response.body().getUid());
                         goToLogin();
                         error.accept(false);
                         break;
@@ -200,7 +201,6 @@ public class RegisterUserFragment extends Fragment {
             @Override
             public void onFailure(Call<User> call, Throwable t) {
                 error.accept(true);
-                System.err.println("error on onFailure 2 " +t.getMessage());
                 FancyToast.makeText(getContext(), t.getMessage(), FancyToast.LENGTH_LONG, FancyToast.ERROR, false).show();
             }
         });
