@@ -146,7 +146,7 @@ public class LogInFragment extends Fragment {
     };
 
     private void autoFill() {
-        binding.mailInput.setText("gab1@mail.com");
+        binding.mailInput.setText("gab99@mail.com");
         binding.passwordInput.setText("12345678");
     }
 
