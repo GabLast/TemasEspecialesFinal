@@ -102,7 +102,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.MyViewHo
     }
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
-        private TextView itemCode, itemName, price, stockAvailable;
+        private TextView itemCode, itemName, price;
         private ImageView avatar, action;
 
         public MyViewHolder(@NonNull View itemView) {
@@ -112,7 +112,6 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.MyViewHo
             price = binding.productPriceTXT;
             avatar = binding.productImage;
             action = binding.manager;
-            stockAvailable = null;
         }
     }
 }

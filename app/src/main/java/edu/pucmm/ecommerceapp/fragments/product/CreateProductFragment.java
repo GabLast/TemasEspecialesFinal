@@ -23,6 +23,8 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 import com.shashank.sony.fancytoastlib.FancyToast;
 import edu.pucmm.ecommerceapp.R;
@@ -31,7 +33,9 @@ import edu.pucmm.ecommerceapp.database.AppExecutors;
 import edu.pucmm.ecommerceapp.database.DAOs.CategoryDao;
 import edu.pucmm.ecommerceapp.database.DAOs.ProductDao;
 import edu.pucmm.ecommerceapp.databinding.FragmentCreateProductBinding;
+import edu.pucmm.ecommerceapp.fragments.ViewModelFactory;
 import edu.pucmm.ecommerceapp.fragments.category.CategoryManagerFragment;
+import edu.pucmm.ecommerceapp.fragments.category.CategoryViewModel;
 import edu.pucmm.ecommerceapp.helpers.Functions;
 import edu.pucmm.ecommerceapp.helpers.GlobalVariables;
 import edu.pucmm.ecommerceapp.models.Category;
@@ -85,20 +89,45 @@ public class CreateProductFragment extends Fragment {
             isInsert = true;
         }
 
-        categoryDao.findAll().observe(this, cats -> {
-            ArrayAdapter<Category> adapter;
-            if (GlobalVariables.getUSERSESSION().getRol().equals(User.ROL.SELLER)) {
-                List<Category> aux = new ArrayList<>();
-                for (Category c : cats) {
-                    if (c.isAvailable()) {
-                        aux.add(c);
-                    }
+//        categoryDao.findAll().observe(this, cats -> {
+//            ArrayAdapter<Category> adapter;
+//            if (GlobalVariables.getUSERSESSION().getRol().equals(User.ROL.SELLER)) {
+//                List<Category> aux = new ArrayList<>();
+//                for (Category c : cats) {
+//                    if (c.isAvailable()) {
+//                        aux.add(c);
+//                    }
+//                }
+//                adapter = new ArrayAdapter<>(getContext(), R.layout.pretty_spinner_item, aux);
+//            }else {
+//                adapter = new ArrayAdapter<>(getContext(), R.layout.pretty_spinner_item, cats);
+//            }
+//            binding.categorySpinner.setAdapter(adapter);
+//        });
+
+//        categoryDao.findAll().observe(this, categories -> {
+//            final Stream<Category> stream = GlobalVariables.getUSERSESSION().getRol().equals(User.ROL.CUSTOMER)
+//                    ? categories.stream().filter(f -> (f.isAvailable()))
+//                    : categories.stream();
+//            final ArrayAdapter<Category> adapter = new ArrayAdapter<>(getContext(), R.layout.pretty_spinner_item, stream.collect(Collectors.toList()));
+//            binding.categorySpinner.setAdapter(adapter);
+//        });
+
+
+        List<Category> aux = new ArrayList<>();
+        ArrayAdapter<Category> adapter = new ArrayAdapter<>(getContext(), R.layout.pretty_spinner_item, aux);
+        binding.categorySpinner.setAdapter(adapter);
+
+        CategoryViewModel categoryViewModel = new ViewModelProvider(this, new ViewModelFactory(getContext())).get(CategoryViewModel.class);
+        categoryViewModel.getListLiveData().observe(this, new Observer<List<Category>>() {
+            @Override
+            public void onChanged(@Nullable final List<Category> terms) {
+                for (Category term : terms) {
+                    aux.add(term);
                 }
-                adapter = new ArrayAdapter<>(getContext(), R.layout.pretty_spinner_item, aux);
-            }else {
-                adapter = new ArrayAdapter<>(getContext(), R.layout.pretty_spinner_item, cats);
+                //notifyDataSetChanged after update termsList variable here
+                adapter.notifyDataSetChanged();
             }
-            binding.categorySpinner.setAdapter(adapter);
         });
 
         drawables = new ArrayList<>();
@@ -116,7 +145,7 @@ public class CreateProductFragment extends Fragment {
             binding.priceTXT.setText(String.valueOf(element.getPrice()));
             binding.availableCheck.setChecked(element.isAvailable());
             binding.productNameTXT.setText(element.getName());
-            binding.stockAvailableTXT.setText(element.getStockAvailable());
+            binding.stockAvailableTXT.setText(String.valueOf(element.getStockAvailable()));
 
         }
 
@@ -149,7 +178,7 @@ public class CreateProductFragment extends Fragment {
                 return;
             }
 
-            binding.categorySpinner.setOnItemClickListener((parent, view1, position, id) -> category = (Category) parent.getItemAtPosition(position));
+//            binding.categorySpinner.setOnItemClickListener((parent, view1, position, id) -> category = (Category) parent.getItemAtPosition(position));
 
             register();
         });
@@ -163,7 +192,7 @@ public class CreateProductFragment extends Fragment {
 
         element.setName(binding.productNameTXT.getText().toString());
         element.setPrice(Double.parseDouble(binding.priceTXT.getText().toString()));
-        element.setIdCategory(category.getIdCategory());
+//        element.setIdCategory(category.getIdCategory());
         element.setAvailable(binding.availableCheck.isChecked());
         element.setStockAvailable(Integer.parseInt(binding.stockAvailableTXT.getText().toString()));
 

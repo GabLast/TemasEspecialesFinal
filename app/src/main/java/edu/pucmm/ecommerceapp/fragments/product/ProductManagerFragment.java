@@ -2,13 +2,13 @@ package edu.pucmm.ecommerceapp.fragments.product;
 
 import android.os.Build;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
@@ -21,7 +21,6 @@ import edu.pucmm.ecommerceapp.database.AppExecutors;
 import edu.pucmm.ecommerceapp.database.DAOs.ProductDao;
 import edu.pucmm.ecommerceapp.databinding.FragmentProductManagerBinding;
 import edu.pucmm.ecommerceapp.fragments.ViewModelFactory;
-import edu.pucmm.ecommerceapp.fragments.category.CategoryViewModel;
 import edu.pucmm.ecommerceapp.helpers.Functions;
 import edu.pucmm.ecommerceapp.helpers.GlobalVariables;
 import edu.pucmm.ecommerceapp.listeners.OnItemTouchListener;
@@ -33,8 +32,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class ProductManagerFragment extends Fragment {
 
@@ -128,7 +125,6 @@ public class ProductManagerFragment extends Fragment {
                     List<Product> aux = new ArrayList<>();
                     for (Product p : products) {
                         if (p.isAvailable()) {
-                            System.out.println(p.getName() + " " + p.getIdProduct());
                             if (category != null) {
                                 if (category.getIdCategory() == p.getIdProduct()) {
                                     aux.add(p);
@@ -136,24 +132,29 @@ public class ProductManagerFragment extends Fragment {
                             } else {
                                 aux.add(p);
                             }
-
                         }
                     }
                     adapter.setElements(aux);
                 } else {
                     if (category != null) {
-                        List<Product> aux = new ArrayList<>();
+                        List<Product> aux2 = new ArrayList<>();
                         for (Product p : products) {
                             if (category.getIdCategory() == p.getIdCategory()) {
-                                aux.add(p);
+                                aux2.add(p);
                             }
                         }
-                        adapter.setElements(aux);
+                        adapter.setElements(aux2);
                     } else {
                         adapter.setElements(products);
                     }
 
                 }
+//                System.err.println("Trying to print my list");
+//                for (Product p : products) {
+//                    System.err.println(p.getIdProduct() + " " + p.getName());
+//                }
+//                adapter.setElements(products);
+                adapter.notifyDataSetChanged();
             }
         });
     }

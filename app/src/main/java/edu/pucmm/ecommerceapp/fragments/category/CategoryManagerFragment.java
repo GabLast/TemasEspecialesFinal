@@ -142,6 +142,7 @@ public class CategoryManagerFragment extends Fragment {
                 }else {
                     adapter.setElements(cats);
                 }
+                adapter.notifyDataSetChanged();
             }
         });
 
