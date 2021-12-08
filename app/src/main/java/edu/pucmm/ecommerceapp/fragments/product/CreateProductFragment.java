@@ -105,13 +105,13 @@ public class CreateProductFragment extends Fragment {
 //            binding.categorySpinner.setAdapter(adapter);
 //        });
 
-//        categoryDao.findAll().observe(this, categories -> {
-//            final Stream<Category> stream = GlobalVariables.getUSERSESSION().getRol().equals(User.ROL.CUSTOMER)
-//                    ? categories.stream().filter(f -> (f.isAvailable()))
-//                    : categories.stream();
-//            final ArrayAdapter<Category> adapter = new ArrayAdapter<>(getContext(), R.layout.pretty_spinner_item, stream.collect(Collectors.toList()));
-//            binding.categorySpinner.setAdapter(adapter);
-//        });
+        categoryDao.findAll().observe(this, categories -> {
+            final Stream<Category> stream = GlobalVariables.getUSERSESSION().getRol().equals(User.ROL.CUSTOMER)
+                    ? categories.stream().filter(f -> (f.isAvailable()))
+                    : categories.stream();
+            final ArrayAdapter<Category> adapter = new ArrayAdapter<>(getContext(), R.layout.pretty_spinner_item, stream.collect(Collectors.toList()));
+            binding.categorySpinner.setAdapter(adapter);
+        });
 
 
         List<Category> aux = new ArrayList<>();
@@ -178,7 +178,7 @@ public class CreateProductFragment extends Fragment {
                 return;
             }
 
-//            binding.categorySpinner.setOnItemClickListener((parent, view1, position, id) -> category = (Category) parent.getItemAtPosition(position));
+            binding.categorySpinner.setOnItemClickListener((parent, view1, position, id) -> category = (Category) parent.getItemAtPosition(position));
 
             register();
         });
@@ -192,7 +192,7 @@ public class CreateProductFragment extends Fragment {
 
         element.setName(binding.productNameTXT.getText().toString());
         element.setPrice(Double.parseDouble(binding.priceTXT.getText().toString()));
-//        element.setIdCategory(category.getIdCategory());
+        element.setIdCategory(category.getIdCategory());
         element.setAvailable(binding.availableCheck.isChecked());
         element.setStockAvailable(Integer.parseInt(binding.stockAvailableTXT.getText().toString()));
 
